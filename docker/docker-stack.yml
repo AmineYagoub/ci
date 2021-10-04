@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  auth-db:
+    image: mongo:5
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME_FILE=/var/run/secrets/AUTH_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/var/run/secrets/AUTH_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE=cozyter
+    ports:
+      - 3002:27017
+    volumes:
+      - ./auth/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./auth/config:/etc/mongo
+      - ./auth/data:/data/db
+    entrypoint: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    secrets:
+      - AUTH_ROOT_USERNAME
+      - AUTH_ROOT_PASSWORD
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - db_network
+
+  app-db:
+    image: postgres
+    volumes:
+      - ./app/data:/var/lib/postgresql/data/pgdata
+    environment:
+      - POSTGRES_DB=cozyter
+      - POSTGRES_USER_FILE=/var/run/secrets/APP_ROOT_USERNAME
+      - POSTGRES_PASSWORD_FILE=/var/run/secrets/APP_ROOT_USERNAME
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 3001:5432
+    secrets:
+      - APP_ROOT_USERNAME
+      - APP_ROOT_PASSWORD
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - db_network
+
+secrets:
+  AUTH_ROOT_PASSWORD:
+    file: ./auth/secrets/password.txt
+  AUTH_ROOT_USERNAME:
+    file: ./auth/secrets/user.txt
+  APP_ROOT_PASSWORD:
+    file: ./app/secrets/password.txt
+  APP_ROOT_USERNAME:
+    file: ./app/secrets/user.txt
+
+networks:
+  db_network:
+    driver: overlay
+    name: db_network
+    attachable: true
+    driver_opts:
+      encrypted: "true"
