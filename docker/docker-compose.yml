@@ -17,11 +17,6 @@ services:
     secrets:
       - AUTH_ROOT_USERNAME
       - AUTH_ROOT_PASSWORD
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
     networks:
       - db_network
 
@@ -39,11 +34,6 @@ services:
     secrets:
       - APP_ROOT_USERNAME
       - APP_ROOT_PASSWORD
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
     networks:
       - db_network
 
@@ -59,8 +49,5 @@ secrets:
 
 networks:
   db_network:
-    driver: overlay
+    driver: bridge
     name: db_network
-    attachable: true
-    driver_opts:
-      encrypted: "true"
