@@ -32,7 +32,7 @@ services:
     environment:
       - POSTGRES_DB=cozyter
       - POSTGRES_USER_FILE=/var/run/secrets/APP_ROOT_USERNAME
-      - POSTGRES_PASSWORD_FILE=/var/run/secrets/APP_ROOT_USERNAME
+      - POSTGRES_PASSWORD_FILE=/var/run/secrets/AUTH_ROOT_PASSWORD
       - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - 3001:5432
